@@ -1,29 +1,92 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <title>Game Lari 2 Player</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+        "three/examples/jsm/loaders/GLTFLoader.js": "https://unpkg.com/three@0.128.0/examples/jsm/loaders/GLTFLoader.js"
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-      #ui {
-        position: absolute;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        color: white;
-        font-size: 24px;
-        font-weight: bold;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="ui">Waktu: 15</div>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="src/js/main.js"></script>
-  </body>
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body class="m-0 overflow-hidden font-sans">
+
+    <div id="start-screen"
+        class="fixed inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center z-[100] text-white transition-opacity duration-500">
+        <h1 class="text-5xl md:text-7xl font-bold mb-4 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">
+            BALAP LARI 3D
+        </h1>
+
+        <p id="loading-text" class="text-xl md:text-2xl text-yellow-400 animate-pulse font-semibold">
+            Memuat Aset 3D...
+        </p>
+
+        <button id="start-btn"
+            class="hidden px-10 py-4 mt-4 text-2xl font-bold text-white bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-full shadow-[0_10px_20px_rgba(16,185,129,0.4)] hover:-translate-y-1 hover:scale-105 hover:shadow-[0_15px_25px_rgba(16,185,129,0.6)] transition-all duration-200 cursor-pointer">
+            MAIN SEKARANG
+        </button>
+    </div>
+
+    <div id="ui"
+        class="fixed top-5 left-1/2 -translate-x-1/2 text-white text-4xl font-extrabold drop-shadow-[2px_4px_4px_rgba(0,0,0,0.8)] z-10 hidden text-center">
+        Waktu: 15
+    </div>
+
+    <div id="countdown-layer" class="fixed inset-0 flex items-center justify-center pointer-events-none z-50 hidden">
+        <div id="countdown-text"
+            class="text-yellow-400 text-8xl md:text-[200px] font-black italic drop-shadow-[0_15px_15px_rgba(0,0,0,0.9)] transition-transform duration-300 transform scale-100">
+            3
+        </div>
+    </div>
+
+    <div id="game-over-screen" class="fixed inset-0 flex flex-col items-center justify-center bg-black/60 z-[200] hidden backdrop-blur-sm transition-opacity duration-300">
+    
+    <h2 id="winner-text" class="text-6xl md:text-8xl font-black italic animate-bounce drop-shadow-[0_15px_15px_rgba(0,0,0,0.9)] mb-12 text-center text-white">
+      Player 1 Menang!
+    </h2>
+
+    <div class="flex gap-6">
+      <button id="restart-btn" class="px-8 py-4 text-2xl font-bold text-white bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-full shadow-[0_10px_20px_rgba(16,185,129,0.4)] hover:-translate-y-1 hover:scale-105 transition-all duration-200 cursor-pointer">
+        MAIN LAGI
+      </button>
+      <button id="home-btn" class="px-8 py-4 text-2xl font-bold text-white bg-gradient-to-br from-slate-600 to-slate-800 rounded-full shadow-[0_10px_20px_rgba(0,0,0,0.4)] hover:-translate-y-1 hover:scale-105 transition-all duration-200 cursor-pointer">
+        MENU UTAMA
+      </button>
+    </div>
+
+  </div>
+
+    <!-- <div id="ui"
+        class="fixed top-5 left-1/2 -translate-x-1/2 text-white text-4xl font-extrabold drop-shadow-[2px_4px_4px_rgba(0,0,0,0.8)] z-10 hidden text-center">
+        Waktu: 15
+    </div> -->
+
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/GLTFLoader.js"></script> -->
+    <script type="module" src="./src/main.js"></script>
+    <!-- <script src="src/js/main.js"></script> -->
+</body>
+
 </html>
