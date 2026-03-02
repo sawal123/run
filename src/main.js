@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { state } from "./state.js";
 import { keys } from "./input.js";
+import { playStepSound } from "./audio.js";
+
 import {
   setUIText,
   startCountdown,
@@ -65,7 +67,7 @@ async function initGame() {
       b2Gltf,
       b3Gltf,
     ] = await Promise.all([
-      loadModel("../assets/glb/run.glb"),
+      loadModel("../assets/glb/character_run1.glb"),
       loadModel("../assets/glb/run1.glb"),
       loadModel("../assets/glb/Road.glb"),
       loadModel("../assets/glb/start.glb"),
@@ -81,13 +83,18 @@ async function initGame() {
       state.finishZ,
     );
 
-    const p1 = setupPlayer(scene, p1Gltf, -3.5, 0.7);
+    const p1 = setupPlayer(scene, p1Gltf, -3.5, 2);
     state.player1 = p1.model;
     state.mixer1 = p1.mixer;
+    state.player1.position.y = 0.1;
+    state.actions1 = p1.actions;
+    console.log("Animasi Player 1:", p1Gltf.animations);
 
     const p2 = setupPlayer(scene, p2Gltf, 3.5, 2);
     state.player2 = p2.model;
     state.mixer2 = p2.mixer;
+    state.actions2 = p2.actions;
+    state.player2.position.y = 0.1;
 
     // startCountdown();
     // animate();
@@ -151,18 +158,22 @@ function animate() {
       if (leftJustPressed && lastKeyP1 !== "Left") {
         p1Velocity += boost;
         lastKeyP1 = "Left";
+        playStepSound(); // <--- BUNYIKAN LANGKAH KAKI
       } else if (rightJustPressed && lastKeyP1 !== "Right") {
         p1Velocity += boost;
         lastKeyP1 = "Right";
+        playStepSound(); // <--- BUNYIKAN LANGKAH KAKI
       }
 
       // --- Player 2 ---
       if (aJustPressed && lastKeyP2 !== "A") {
         p2Velocity += boost;
         lastKeyP2 = "A";
+        playStepSound(); // <--- BUNYIKAN LANGKAH KAKI
       } else if (dJustPressed && lastKeyP2 !== "D") {
         p2Velocity += boost;
         lastKeyP2 = "D";
+        playStepSound(); // <--- BUNYIKAN LANGKAH KAKI
       }
     }
 
@@ -176,37 +187,37 @@ function animate() {
     p1Velocity *= friction;
     p2Velocity *= friction;
 
-    // ================= 3. UPDATE ANIMASI (SELALU JALAN AGAR BISA KEMBALI TEGAK) =================
-    const p1Action = state.mixer1 ? state.mixer1._actions[0] : null;
-    const p2Action = state.mixer2 ? state.mixer2._actions[0] : null;
+    // ================= 3. UPDATE ANIMASI (IDLE & RUN) =================
 
-    if (state.mixer1) {
+    // Mesin tulang harus selalu di-update setiap frame agar nafasnya (Idle) jalan
+    if (state.mixer1) state.mixer1.update(delta);
+    if (state.mixer2) state.mixer2.update(delta);
+
+    // --- Update Animasi Player 1 ---
+    if (state.actions1) {
       if (p1Velocity > 0.01) {
-        state.mixer1.update(delta * (p1Velocity * 5));
-        if (p1Action && p1Action.getEffectiveWeight() < 1)
-          p1Action.setEffectiveWeight(1);
+        // SEDANG LARI: Tampilkan gaya lari, sembunyikan gaya diam
+        state.actions1.run.setEffectiveWeight(1);
+        state.actions1.idle.setEffectiveWeight(0);
+
+        // Sesuaikan kecepatan ayunan kaki dengan kecepatan lari
+        state.actions1.run.setEffectiveTimeScale(p1Velocity * 5);
       } else {
-        if (p1Action && p1Action.getEffectiveWeight() > 0) {
-          p1Action.setEffectiveWeight(
-            Math.max(0, p1Action.getEffectiveWeight() - 0.1),
-          );
-          state.mixer1.update(delta);
-        }
+        // BERHENTI: Tampilkan gaya diam bernafas, sembunyikan gaya lari
+        state.actions1.run.setEffectiveWeight(0);
+        state.actions1.idle.setEffectiveWeight(1);
       }
     }
 
-    if (state.mixer2) {
+    // --- Update Animasi Player 2 ---
+    if (state.actions2) {
       if (p2Velocity > 0.01) {
-        state.mixer2.update(delta * (p2Velocity * 5));
-        if (p2Action && p2Action.getEffectiveWeight() < 1)
-          p2Action.setEffectiveWeight(1);
+        state.actions2.run.setEffectiveWeight(1);
+        state.actions2.idle.setEffectiveWeight(0);
+        state.actions2.run.setEffectiveTimeScale(p2Velocity * 5);
       } else {
-        if (p2Action && p2Action.getEffectiveWeight() > 0) {
-          p2Action.setEffectiveWeight(
-            Math.max(0, p2Action.getEffectiveWeight() - 0.1),
-          );
-          state.mixer2.update(delta);
-        }
+        state.actions2.run.setEffectiveWeight(0);
+        state.actions2.idle.setEffectiveWeight(1);
       }
     }
 

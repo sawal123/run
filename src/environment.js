@@ -1,5 +1,5 @@
 // environment.js
-import * as THREE from 'three';
+import * as THREE from "three";
 
 export function buildWorld(scene, assets, finishZ) {
   const { roadGltf, startGltf, finishGltf, b1Gltf, b2Gltf, b3Gltf } = assets;
@@ -18,21 +18,33 @@ export function buildWorld(scene, assets, finishZ) {
   // Setup Jalan & Gedung
   const panjangJalanMaksimal = Math.abs(finishZ) + 60;
   const panjangPerSegmen = 10;
-  const skalaJalanLebar = 0.05, skalaJalanPanjang = 0.02;
-  const skalaGedung = 3.5, jarakGedung = 20;
+  const skalaJalanLebar = 0.05,
+    skalaJalanPanjang = 0.02;
+  const skalaGedung = 3.5,
+    jarakGedung = 20;
 
   for (let z = 10; z >= -panjangJalanMaksimal; z -= panjangPerSegmen) {
     const jalan = roadGltf.scene.clone();
     jalan.scale.set(skalaJalanLebar, skalaJalanPanjang, skalaJalanPanjang);
     jalan.position.set(0, 0, z);
+
+    // --- TAMBAHKAN INI AGAR ASPAL BISA MENANGKAP BAYANGAN ---
+    jalan.traverse((child) => {
+      if (child.isMesh) {
+        child.receiveShadow = true;
+      }
+    });
+
     scene.add(jalan);
 
-    const gedungKiri = arrayGedung[Math.floor(Math.random() * arrayGedung.length)].clone();
+    const gedungKiri =
+      arrayGedung[Math.floor(Math.random() * arrayGedung.length)].clone();
     gedungKiri.scale.set(skalaGedung, skalaGedung, skalaGedung);
     gedungKiri.position.set(-jarakGedung, 0, z);
     scene.add(gedungKiri);
 
-    const gedungKanan = arrayGedung[Math.floor(Math.random() * arrayGedung.length)].clone();
+    const gedungKanan =
+      arrayGedung[Math.floor(Math.random() * arrayGedung.length)].clone();
     gedungKanan.scale.set(skalaGedung, skalaGedung, skalaGedung);
     gedungKanan.position.set(jarakGedung, 0, z);
     gedungKanan.rotation.y = Math.PI;

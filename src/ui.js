@@ -1,5 +1,12 @@
 // ui.js
 import { state } from "./state.js";
+import {
+  playSFX,
+  playBGM,
+  stopBGM,
+  playMenuBGM,
+  stopMenuBGM,
+} from "./audio.js";
 
 const uiElement = document.getElementById("ui");
 const startScreen = document.getElementById("start-screen");
@@ -48,23 +55,35 @@ function triggerCelebrateConfetti() {
 
 // Fungsi transisi Start Screen
 export function setupStartScreen(onPlayCallback) {
-  // Sembunyikan teks loading, munculkan tombol
   loadingText.classList.add("hidden");
   startBtn.classList.remove("hidden");
 
-  // Event ketika tombol MAIN diklik
-  startBtn.onclick = () => {
-    // 1. Berikan efek fade-out pada layar utama (menggunakan opacity Tailwind)
+  // 1. Coba putar langsung saat tombol "MAIN SEKARANG" muncul
+  playMenuBGM();
+
+  // 2. TRIK ANTI-BLOKIR BROWSER:
+  // Jika autoplay diblokir, putar musik saat user klik area manapun di layar
+  const startAudioOnInteract = () => {
+    playMenuBGM();
+    window.removeEventListener("click", startAudioOnInteract);
+  };
+  window.addEventListener("click", startAudioOnInteract);
+
+  // 3. Saat tombol MAIN SEKARANG diklik
+  startBtn.onclick = (e) => {
+    e.stopPropagation(); // Mencegah bentrok dengan trik klik di atas
+    window.removeEventListener("click", startAudioOnInteract);
+
+    // Matikan musik menu, putar suara klik (opsional)
+    stopMenuBGM();
+    playSFX("step"); // Memberi efek suara saat tombol diklik
+
     startScreen.classList.add("opacity-0");
 
-    // 2. Tunggu sebentar sampai efek fade selesai, lalu hilangkan total
     setTimeout(() => {
       startScreen.classList.add("hidden");
-      //   uiElement.classList.remove("hidden");
-
-      // 3. Mulai Hitung Mundur (3, 2, 1, GO!)
-      onPlayCallback();
-    }, 500); // 500ms sesuai dengan class duration-500 di HTML
+      onPlayCallback(); // Ini akan memanggil startCountdown()
+    }, 500);
   };
 }
 
@@ -104,9 +123,13 @@ export function endGame(message) {
   if (message.includes("Player 1")) {
     winnerText.classList.add("text-blue-400"); // Warna Tim P1
     triggerCelebrateConfetti();
+    stopBGM(); // HENTIKAN MUSIK BALAPAN
+    playSFX("win"); // PUTAR SUARA KEMENANGAN / TEPUK TANGAN
   } else if (message.includes("Player 2")) {
     winnerText.classList.add("text-orange-400"); // Warna Tim P2
     triggerCelebrateConfetti();
+    stopBGM(); // HENTIKAN MUSIK BALAPAN
+    playSFX("win"); // PUTAR SUARA KEMENANGAN / TEPUK TANGAN
   } else {
     winnerText.classList.add("text-red-500"); // Warna jika Seri / Waktu Habis
   }
@@ -129,17 +152,15 @@ export function startTimer() {
 
 // ================= FUNGSI COUNTDOWN BARU =================
 export function startCountdown() {
-  // Pastikan timer atas sembunyi dulu
   uiElement.classList.add("hidden");
-
-  // Munculkan layer raksasa di tengah
   countdownLayer.classList.remove("hidden");
   countdownText.innerText = state.countdown;
+
+  if (window.playSFX) playSFX("beep"); // Putar beep awal
 
   const cd = setInterval(() => {
     state.countdown--;
 
-    // Efek Pop Animasi (Membesar lalu mengecil sedikit tiap detik)
     countdownText.classList.add("scale-125");
     setTimeout(() => {
       countdownText.classList.remove("scale-125");
@@ -147,20 +168,25 @@ export function startCountdown() {
 
     if (state.countdown > 0) {
       countdownText.innerText = state.countdown;
+      playSFX("beep");
     } else if (state.countdown === 0) {
-      // Ubah teks dan warna saat GO!
       countdownText.innerText = "GO!";
       countdownText.classList.remove("text-yellow-400");
-      countdownText.classList.add("text-emerald-400"); // Hijau cerah
-    } else {
-      // Hitung mundur selesai
-      clearInterval(cd);
-      countdownLayer.classList.add("hidden"); // Hilangkan tulisan GO!
-      uiElement.classList.remove("hidden"); // Munculkan timer di atas
+      countdownText.classList.add("text-emerald-400");
 
+      playSFX("go");
+      playBGM();
+
+      // --- PERBAIKAN DI SINI ---
+      // Game langsung dimulai di detik ke-0 (Saat GO! muncul)
       state.gameStarted = true;
+      uiElement.classList.remove("hidden"); // Munculkan timer atas
       setUIText("Waktu: " + state.timeLeft);
       startTimer();
+    } else {
+      // 1 detik setelah GO!, baru sembunyikan tulisan raksasanya
+      clearInterval(cd);
+      countdownLayer.classList.add("hidden");
     }
   }, 1000);
 }
