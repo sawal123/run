@@ -5,7 +5,7 @@ export const state = {
   clock: new THREE.Clock(),
   gameStarted: false,
   gameEnded: false,
-  timeLeft: 15,
+  timeLeft: 20,
   countdown: 3,
   finishZ: -120,
   speed: 0.15,

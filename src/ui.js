@@ -138,27 +138,41 @@ export function endGame(message) {
   gameOverScreen.classList.remove("hidden");
 }
 
+
+// Contoh perbaikan di fungsi startTimer
 export function startTimer() {
-  const timer = setInterval(() => {
-    if (!state.gameStarted || state.gameEnded) return;
+  // Bersihkan timer lama sebelum mulai yang baru
+  if (state.gameTimerInterval) {
+    clearInterval(state.gameTimerInterval);
+  }
+
+  state.gameTimerInterval = setInterval(() => {
     state.timeLeft--;
     setUIText("Waktu: " + state.timeLeft);
+
     if (state.timeLeft <= 0) {
-      clearInterval(timer);
-      endGame("Waktu Habis!");
+      clearInterval(state.gameTimerInterval);
+      // Logika game over / finish di sini
     }
   }, 1000);
 }
 
+
 // ================= FUNGSI COUNTDOWN BARU =================
 export function startCountdown() {
+  // 1. BERSIHKAN INTERVAL LAMA (ANTI NGEBUT)
+  if (state.countdownInterval) {
+    clearInterval(state.countdownInterval);
+  }
+
   uiElement.classList.add("hidden");
   countdownLayer.classList.remove("hidden");
   countdownText.innerText = state.countdown;
 
   if (window.playSFX) playSFX("beep"); // Putar beep awal
 
-  const cd = setInterval(() => {
+  // 2. SIMPAN INTERVAL KE DALAM STATE
+  state.countdownInterval = setInterval(() => {
     state.countdown--;
 
     countdownText.classList.add("scale-125");
@@ -177,15 +191,14 @@ export function startCountdown() {
       playSFX("go");
       playBGM();
 
-      // --- PERBAIKAN DI SINI ---
-      // Game langsung dimulai di detik ke-0 (Saat GO! muncul)
       state.gameStarted = true;
       uiElement.classList.remove("hidden"); // Munculkan timer atas
       setUIText("Waktu: " + state.timeLeft);
+
       startTimer();
     } else {
-      // 1 detik setelah GO!, baru sembunyikan tulisan raksasanya
-      clearInterval(cd);
+      // 3. BERSIHKAN INTERVAL SAAT SELESAI
+      clearInterval(state.countdownInterval);
       countdownLayer.classList.add("hidden");
     }
   }, 1000);

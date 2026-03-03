@@ -43,7 +43,7 @@ function resetGame() {
   for (let key in prevKeys) delete prevKeys[key];
 
   // 3. Reset State Waktu
-  state.timeLeft = 15;
+  state.timeLeft = 20;
   state.countdown = 3;
   state.gameEnded = false;
   state.gameStarted = false;
@@ -51,6 +51,16 @@ function resetGame() {
   // 4. Mulai ulang hitungan mundur
   startCountdown();
 }
+
+document.getElementById("restart-btn").addEventListener("click", () => {
+  // 1. BUNUH SEMUA INTERVAL DARI GAME SEBELUMNYA SEKARANG JUGA!
+  if (state.gameTimerInterval) clearInterval(state.gameTimerInterval);
+  if (state.countdownInterval) clearInterval(state.countdownInterval);
+  state.countdown = 3;
+  state.timeLeft = 20;
+  state.gameStarted = false;
+  startCountdown();
+});
 
 async function initGame() {
   setUIText("Loading Assets...");
@@ -68,7 +78,7 @@ async function initGame() {
       b3Gltf,
     ] = await Promise.all([
       loadModel("../assets/glb/character_run1.glb"),
-      loadModel("../assets/glb/run1.glb"),
+      loadModel("../assets/glb/character_run2.glb"),
       loadModel("../assets/glb/Road.glb"),
       loadModel("../assets/glb/start.glb"),
       loadModel("../assets/glb/finish.glb"),
@@ -90,7 +100,7 @@ async function initGame() {
     state.actions1 = p1.actions;
     console.log("Animasi Player 1:", p1Gltf.animations);
 
-    const p2 = setupPlayer(scene, p2Gltf, 3.5, 2);
+    const p2 = setupPlayer(scene, p2Gltf, 3.5, 1);
     state.player2 = p2.model;
     state.mixer2 = p2.mixer;
     state.actions2 = p2.actions;
